@@ -10,7 +10,7 @@ from langchain.chat_models import ChatOpenAI
 from langchain.chains import RetrievalQA
 from langchain.prompts import PromptTemplate
 from langchain.docstore.document import Document
-from openai.error import RateLimitError  # ✅ Corrected import
+from openai.error import RateLimitError  # Corrected import
 
 OPENAI_API_KEY = st.secrets["OPENAI_API_KEY"]
 embedding = OpenAIEmbeddings(openai_api_key=OPENAI_API_KEY)
@@ -56,7 +56,35 @@ def load_or_embed_agreements():
 
 def compare_question_across_agreements(question, agreements, selected):
     results = {}
-    prompt = PromptTemplate.from_template("""
+    prompt = PromptTemplate.from_template(
+        """
 You are a helpful assistant that answers questions using only the provided collective agreement text.
 
-- Cite the agreement
+- Cite the agreement name and relevant article numbers where applicable.
+- If the agreement does not contain relevant information, say so.
+- Be concise and avoid legal jargon.
+
+Context:
+{context}
+
+Question: {question}
+
+Answer:
+        """
+    )
+    for name in selected:
+        try:
+            index = agreements[name]
+            retriever = index.as_retriever(search_kwargs={"k": 5})
+            llm = ChatOpenAI(model_name="gpt-3.5-turbo", temperature=0, openai_api_key=OPENAI_API_KEY)
+            qa = RetrievalQA.from_chain_type(
+                llm=llm,
+                retriever=retriever,
+                return_source_documents=False,
+                chain_type_kwargs={"prompt": prompt}
+            )
+            answer = qa.run(question)
+            results[name] = answer
+        except Exception as e:
+            results[name] = f"❌ Error: {e}"
+    return results
