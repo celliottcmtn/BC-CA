@@ -1,23 +1,21 @@
 import streamlit as st
-from utils import load_and_embed_agreements, compare_question_across_agreements
+from utils import load_or_embed_agreements, compare_question_across_agreements
 
 st.set_page_config(page_title="HR Agreement Comparator", layout="wide")
 st.title("📄 HR Collective Agreement Comparator")
 
-st.markdown("Upload agreements to the `agreements/` folder in your repo.")
+st.markdown("Place your agreement PDFs in the `agreements/` folder of your GitHub repo.")
 
-# Load and embed PDFs
-with st.spinner("Loading agreements..."):
-    agreements = load_and_embed_agreements()
+# Load FAISS or embed once
+with st.spinner("Loading agreement indexes..."):
+    agreements = load_or_embed_agreements()
     if not agreements:
-        st.error("No agreements found in the 'agreements' folder.")
+        st.error("No agreements found.")
         st.stop()
 
-# Let user select agreements to compare
+# UI: Select agreements and ask a question
 selected = st.multiselect("Select agreements to compare:", list(agreements.keys()), default=list(agreements.keys())[:2])
-
-# Ask a question
-question = st.text_input("Ask a question to compare across agreements")
+question = st.text_input("Ask your question to compare across agreements")
 
 if question and selected:
     with st.spinner("Comparing responses..."):
