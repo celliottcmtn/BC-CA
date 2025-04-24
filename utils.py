@@ -10,7 +10,7 @@ from langchain.chat_models import ChatOpenAI
 from langchain.chains import RetrievalQA
 from langchain.prompts import PromptTemplate
 from langchain.docstore.document import Document
-from openai import error  # Compatible across OpenAI versions
+from openai.error import RateLimitError  # ✅ Final fix
 
 OPENAI_API_KEY = st.secrets["OPENAI_API_KEY"]
 embedding = OpenAIEmbeddings(openai_api_key=OPENAI_API_KEY)
@@ -46,7 +46,7 @@ def load_or_embed_agreements():
                             index.save_local(str(index_path))
                             agreements[file.stem.replace("_", " ")] = index
                             success = True
-                        except error.RateLimitError:
+                        except RateLimitError:
                             st.warning(f"⏳ Rate limit hit while embedding {file.name}. Retrying in 5 seconds...")
                             time.sleep(5)
         except Exception as e:
