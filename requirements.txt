@@ -1,0 +1,7 @@
+streamlit
+openai
+langchain==0.0.340
+faiss-cpu
+PyMuPDF
+python-dotenv
+tiktoken
