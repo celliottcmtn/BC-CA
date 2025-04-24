@@ -28,7 +28,7 @@ with st.spinner("Loading agreement indexes..."):
 
 # UI: Select agreements and ask a question
 selected = st.multiselect("Select agreements to compare:", list(agreements.keys()), 
-                         default=list(agreements.keys())[:min(2, len(agreements.keys()))])
+                         default=list(agreements.keys()))  # Default to all agreements
 
 question = st.text_input("Ask your question to compare across agreements")
 
